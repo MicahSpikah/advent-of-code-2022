@@ -12,10 +12,9 @@ int score( char const common )
     }
 }
 
-int main( int const argc, char* const argv[] )
+advent_t advent( std::vector< std::string > const& raw_input )
 {
-    auto input{ parse_input( argc, argv ) };
-
+    auto input = raw_input;
     int sum{};
 
     for( std::size_t i{}; i < input.size(); i += 3 )
@@ -31,5 +30,5 @@ int main( int const argc, char* const argv[] )
         sum += score( intersection.front() );
     }
 
-    std::cout << sum << '\n';
+    return sum;
 }

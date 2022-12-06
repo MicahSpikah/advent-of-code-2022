@@ -27,9 +27,8 @@ std::vector< parsed_sections > parse_sections( std::vector< std::string > const&
     return out;
 }
 
-int main( int const argc, char* const argv[] )
+advent_t advent( std::vector< std::string > const& raw_input )
 {
-    auto const raw_input{ parse_input( argc, argv ) };
     auto const sections{ parse_sections( raw_input ) };
 
     int sum{};
@@ -41,5 +40,5 @@ int main( int const argc, char* const argv[] )
         }
     }
 
-    std::cout << sum << '\n';
+    return sum;
 }

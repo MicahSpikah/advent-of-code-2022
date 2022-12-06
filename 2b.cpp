@@ -1,10 +1,8 @@
 #include "parse_input.h"
 #include <map>
 
-int main( int const argc, char* const argv[] )
+advent_t advent( std::vector< std::string > const& input )
 {
-    auto const input{ parse_input( argc, argv ) };
-
     std::map< std::string, int > const score{
         { "A X", 3 + 0 },
         { "A Y", 1 + 3 },
@@ -23,5 +21,5 @@ int main( int const argc, char* const argv[] )
         sum += score.at( line );
     }
 
-    std::cout << sum << '\n';
+    return sum;
 }

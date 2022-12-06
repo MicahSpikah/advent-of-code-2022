@@ -1,9 +1,8 @@
 #include "parse_input.h"
+#include <numeric>
 
-int main( int const argc, char* const argv[] )
+advent_t advent( std::vector< std::string > const& input )
 {
-    auto const input{ parse_input( argc, argv ) };
-
     std::vector< std::vector< char > > stacks;
 
     // What line tells me how many stacks I have?
@@ -51,6 +50,5 @@ int main( int const argc, char* const argv[] )
         }
     } );
 
-    std::for_each( stacks.cbegin(), stacks.cend(), []( auto const& stack ) { std::cout << stack.back(); } );
-    std::cout << '\n';
+    return std::accumulate( stacks.cbegin(), stacks.cend(), std::string{}, []( auto const& l, auto const& r ) { return l + r.back(); } );
 }

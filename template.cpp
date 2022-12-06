@@ -1,6 +1,5 @@
 #include "parse_input.h"
 
-int main( int const argc, char* const argv[] )
+advent_t advent( std::vector< std::string > const& input )
 {
-    auto const input{ parse_input( argc, argv ) };
 }

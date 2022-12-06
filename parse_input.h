@@ -2,16 +2,19 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <variant>
 #include <vector>
 
-std::vector< std::string > parse_input( int const argc, char* const argv[] )
+using advent_t = std::variant< std::string, int >;
+advent_t advent( std::vector< std::string > const& raw_input );
+
+int main( int const argc, char* const argv[] )
 {
     if( argc != 2 )
     {
         std::cerr << "Error: Run as " << argv[ 0 ] << " <input.txt>\n";
         std::exit( 1 );
     }
-    std::vector< std::string > out;
     std::ifstream file( argv[ 1 ] );
     if( !file.is_open() )
     {
@@ -19,10 +22,20 @@ std::vector< std::string > parse_input( int const argc, char* const argv[] )
         std::exit( 1 );
     }
 
+    std::vector< std::string > raw_input;
     for( std::string line; std::getline( file, line ); )
     {
-        out.push_back( line );
+        raw_input.push_back( line );
     }
 
-    return out;
+    auto const result{ advent( raw_input ) };
+
+    if( std::holds_alternative< int >( result ) )
+    {
+        std::cout << std::get< int >( result ) << '\n';
+    }
+    else
+    {
+        std::cout << std::get< std::string >( result ) << '\n';
+    }
 }

@@ -9,6 +9,7 @@ using advent_t = std::variant< std::string, int >;
 advent_t advent( std::vector< std::string > const& raw_input );
 
 int main( int const argc, char* const argv[] )
+try
 {
     if( argc != 2 )
     {
@@ -29,4 +30,14 @@ int main( int const argc, char* const argv[] )
     }
 
     std::visit( []( auto const result ) { std::cout << result << '\n'; }, advent( raw_input ) );
+}
+catch( std::exception const& e )
+{
+    std::cout << "Exception: " << e.what() << '\n';
+    return 1;
+}
+catch( ... )
+{
+    std::cout << "Unknown exception\n";
+    return 1;
 }

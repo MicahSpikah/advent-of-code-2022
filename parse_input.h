@@ -28,14 +28,5 @@ int main( int const argc, char* const argv[] )
         raw_input.push_back( line );
     }
 
-    auto const result{ advent( raw_input ) };
-
-    if( std::holds_alternative< int >( result ) )
-    {
-        std::cout << std::get< int >( result ) << '\n';
-    }
-    else
-    {
-        std::cout << std::get< std::string >( result ) << '\n';
-    }
+    std::visit( []( auto const result ) { std::cout << result << '\n'; }, advent( raw_input ) );
 }

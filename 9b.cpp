@@ -15,7 +15,7 @@ advent_t advent( std::vector< std::string > const& input )
     auto const bump_knots{ [ & ] {
         for( auto k{ 1 }; k < knots.size(); ++k )
         {
-            auto& head{ knots[ k - 1 ] };
+            auto const& head{ knots[ k - 1 ] };
             auto& tail{ knots[ k ] };
 
             if( tail.x + 1 < head.x )

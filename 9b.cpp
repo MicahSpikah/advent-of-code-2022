@@ -1,6 +1,5 @@
 #include "parse_input.h"
 #include <unordered_set>
-#include <utility>
 
 struct loc_t
 {
@@ -12,12 +11,6 @@ advent_t advent( std::vector< std::string > const& input )
 {
     std::vector< loc_t > knots( 10 );
     std::unordered_set< std::string > locs{ "0,0" };
-
-    auto const dbg_out{ [ & ] {
-        for( auto const& k : knots )
-            std::cout << "(" << k.x << ", " << k.y << ") ";
-        std::cout << '\n';
-    } };
 
     auto const bump_knots{ [ & ] {
         for( auto k{ 1 }; k < knots.size(); ++k )
@@ -62,47 +55,42 @@ advent_t advent( std::vector< std::string > const& input )
         locs.insert( std::to_string( knots.back().x ) + "," + std::to_string( knots.back().y ) );
     } };
 
-    auto const r{ [ & ] {
-        ++knots[ 0 ].x;
-        bump_knots();
-    } };
-    auto const l{ [ & ] {
-        --knots[ 0 ].x;
-        bump_knots();
-    } };
-    auto const u{ [ & ] {
-        ++knots[ 0 ].y;
-        bump_knots();
-    } };
-    auto const d{ [ & ] {
-        --knots[ 0 ].y;
-        bump_knots();
-    } };
-
     for( auto const& instruction : input )
     {
         switch( instruction.front() )
         {
         case 'U':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                u();
+            {
+                ++knots[ 0 ].y;
+                bump_knots();
+            }
             break;
         case 'D':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                d();
+            {
+                --knots[ 0 ].y;
+                bump_knots();
+            }
             break;
         case 'L':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                l();
+            {
+                --knots[ 0 ].x;
+                bump_knots();
+            }
             break;
         case 'R':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                r();
+            {
+                ++knots[ 0 ].x;
+                bump_knots();
+            }
             break;
         default:
             throw std::runtime_error( "Input parsing problem" );
         }
     }
 
-    return static_cast< int >( locs.size() );
+    return locs.size();
 }

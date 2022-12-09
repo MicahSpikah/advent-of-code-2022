@@ -5,7 +5,7 @@
 #include <variant>
 #include <vector>
 
-using advent_t = std::variant< std::string, int >;
+using advent_t = std::variant< std::string, int, std::size_t >;
 advent_t advent( std::vector< std::string > const& raw_input );
 
 int main( int const argc, char* const argv[] )

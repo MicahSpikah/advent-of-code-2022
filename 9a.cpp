@@ -1,54 +1,58 @@
 #include "parse_input.h"
 #include <unordered_set>
-#include <utility>
 
 struct loc_t
 {
-    int first{};
-    int second{};
+    int x{};
+    int y{};
 };
 
 advent_t advent( std::vector< std::string > const& input )
 {
-    loc_t head{ 0, 0 };
-    loc_t tail{ 0, 0 };
+    std::vector< loc_t > knots( 2 );
     std::unordered_set< std::string > locs{ "0,0" };
 
-    auto const r{ [ & ] {
-        ++head.first;
-        if( tail.first + 1 < head.first )
+    auto const bump_knots{ [ & ] {
+        for( auto k{ 1 }; k < knots.size(); ++k )
         {
-            ++tail.first;
-            tail.second = head.second;
+            auto const& head{ knots[ k - 1 ] };
+            auto& tail{ knots[ k ] };
+
+            if( tail.x + 1 < head.x )
+            {
+                ++tail.x;
+                if( tail.y < head.y )
+                    ++tail.y;
+                else if( tail.y > head.y )
+                    --tail.y;
+            }
+            else if( head.x + 1 < tail.x )
+            {
+                --tail.x;
+                if( tail.y < head.y )
+                    ++tail.y;
+                else if( tail.y > head.y )
+                    --tail.y;
+            }
+            else if( tail.y + 1 < head.y )
+            {
+                ++tail.y;
+                if( tail.x < head.x )
+                    ++tail.x;
+                else if( tail.x > head.x )
+                    --tail.x;
+            }
+            else if( head.y + 1 < tail.y )
+            {
+                --tail.y;
+                if( tail.x < head.x )
+                    ++tail.x;
+                else if( tail.x > head.x )
+                    --tail.x;
+            }
         }
-        locs.insert( std::to_string( tail.first ) + "," + std::to_string( tail.second ) );
-    } };
-    auto const l{ [ & ] {
-        --head.first;
-        if( head.first + 1 < tail.first )
-        {
-            --tail.first;
-            tail.second = head.second;
-        }
-        locs.insert( std::to_string( tail.first ) + "," + std::to_string( tail.second ) );
-    } };
-    auto const u{ [ & ] {
-        ++head.second;
-        if( tail.second + 1 < head.second )
-        {
-            ++tail.second;
-            tail.first = head.first;
-        }
-        locs.insert( std::to_string( tail.first ) + "," + std::to_string( tail.second ) );
-    } };
-    auto const d{ [ & ] {
-        --head.second;
-        if( head.second + 1 < tail.second )
-        {
-            --tail.second;
-            tail.first = head.first;
-        }
-        locs.insert( std::to_string( tail.first ) + "," + std::to_string( tail.second ) );
+
+        locs.insert( std::to_string( knots.back().x ) + "," + std::to_string( knots.back().y ) );
     } };
 
     for( auto const& instruction : input )
@@ -57,24 +61,36 @@ advent_t advent( std::vector< std::string > const& input )
         {
         case 'U':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                u();
+            {
+                ++knots[ 0 ].y;
+                bump_knots();
+            }
             break;
         case 'D':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                d();
+            {
+                --knots[ 0 ].y;
+                bump_knots();
+            }
             break;
         case 'L':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                l();
+            {
+                --knots[ 0 ].x;
+                bump_knots();
+            }
             break;
         case 'R':
             for( int i = 0; i < std::stoi( instruction.substr( 2 ) ); ++i )
-                r();
+            {
+                ++knots[ 0 ].x;
+                bump_knots();
+            }
             break;
         default:
             throw std::runtime_error( "Input parsing problem" );
         }
     }
 
-    return static_cast< int >( locs.size() );
+    return locs.size();
 }

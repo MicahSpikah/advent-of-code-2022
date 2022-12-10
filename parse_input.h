@@ -5,7 +5,7 @@
 #include <variant>
 #include <vector>
 
-using advent_t = std::variant< std::string, int, std::size_t >;
+using advent_t = std::variant< std::string, int, std::size_t, std::vector< std::string > >;
 advent_t advent( std::vector< std::string > const& raw_input );
 
 int main( int const argc, char* const argv[] )
@@ -29,7 +29,18 @@ try
         raw_input.push_back( line );
     }
 
-    std::visit( []( auto const result ) { std::cout << result << '\n'; }, advent( raw_input ) );
+    std::visit( []( auto const result ) {
+        if constexpr( std::is_same_v< std::vector< std::string >, std::decay_t< decltype( result ) > > )
+        {
+            for( auto const& line : result )
+                std::cout << line << '\n';
+        }
+        else
+        {
+            std::cout << result << '\n';
+        }
+    },
+                advent( raw_input ) );
 }
 catch( std::exception const& e )
 {

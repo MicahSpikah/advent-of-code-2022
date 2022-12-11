@@ -1,11 +1,12 @@
 #pragma once
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <variant>
 #include <vector>
 
-using advent_t = std::variant< std::string, int, std::size_t, std::vector< std::string > >;
+using advent_t = std::variant< std::uint64_t, std::string, int, std::size_t, std::vector< std::string > >;
 advent_t advent( std::vector< std::string > const& raw_input );
 
 int main( int const argc, char* const argv[] )

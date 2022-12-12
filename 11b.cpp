@@ -91,7 +91,6 @@ advent_t advent( std::vector< std::string > const& input )
                     old *= old;
                 old *= m.op_multiply;
                 old += m.op_add;
-                // while(old > 2*3*5*7*11*13*17*19) old -= 2*3*5*7*11*13*17*19;
                 old %= ( 3 * 2 * 5 * 7 * 11 * 13 * 17 * 19 );
                 if( old % m.test == 0 )
                 {
@@ -103,7 +102,6 @@ advent_t advent( std::vector< std::string > const& input )
                 }
             }
             m.items.clear();
-            //++monkey_index;
         }
         if( round + 1 == 1 || round + 1 == 20 || round + 1 == 1000 || ( round + 1 ) % 1000 == 0 )
         {

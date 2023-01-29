@@ -21,16 +21,28 @@ struct state
     int flow{};
     std::string location{ "AA" };
     int minutes_remaining{ 30 };
+    std::vector< std::string > path;
+    std::vector< int > untaken_paths;
 };
 
 int get_best_outcome( state the_state )
 {
-    if( the_state.minutes_remaining <= 1 )
+    if( the_state.minutes_remaining <= 1 || std::all_of( the_state.valves.cbegin(), the_state.valves.cend(), []( auto const& t ) { return t.second.open; } ) )
         return the_state.flow;
 
-    the_state.visited.emplace( the_state.location );
-
     int best_result = the_state.flow;
+
+    if( the_state.untaken_paths.size() < 5 )
+    {
+        the_state.untaken_paths.push_back( 0 );
+        if( !the_state.valves[ the_state.location ].open )
+            ++the_state.untaken_paths.back();
+        for( auto const& next_room : the_state.valves[ the_state.location ].tunnels )
+            ++the_state.untaken_paths.back();
+        for( auto const i : the_state.untaken_paths )
+            std::cerr << i << ' ';
+        std::cerr << '\n';
+    }
 
     if( !the_state.valves[ the_state.location ].open )
     {
@@ -38,9 +50,16 @@ int get_best_outcome( state the_state )
         --x.minutes_remaining;
         x.valves[ x.location ].open = true;
         x.flow += x.minutes_remaining * x.valves[ x.location ].flow_rate;
-        x.visited.clear();
+        x.visited = std::unordered_set< std::string >{ x.location };
 
         best_result = get_best_outcome( std::move( x ) );
+        if( the_state.untaken_paths.size() < 5 )
+        {
+            --the_state.untaken_paths.back();
+            for( auto const i : the_state.untaken_paths )
+                std::cerr << i << ' ';
+            std::cerr << '\n';
+        }
     }
 
     for( auto const& next_room : the_state.valves[ the_state.location ].tunnels )
@@ -49,8 +68,19 @@ int get_best_outcome( state the_state )
         {
             state x = the_state;
             --x.minutes_remaining;
-            x.location  = next_room;
+            x.location = next_room;
+            for( auto const& not_here : the_state.valves[ the_state.location ].tunnels )
+            {
+                x.visited.emplace( not_here );
+            }
             best_result = std::max( best_result, get_best_outcome( std::move( x ) ) );
+            if( the_state.untaken_paths.size() < 5 )
+            {
+                --the_state.untaken_paths.back();
+                for( auto const i : the_state.untaken_paths )
+                    std::cerr << i << ' ';
+                std::cerr << '\n';
+            }
         }
     }
 

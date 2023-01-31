@@ -14,10 +14,9 @@ struct state
     std::string loc{ "AA" };
 };
 
-std::pair< int, state > best_from( state s )
+int best_from( state s )
 {
-    int best         = s.flow;
-    state best_state = s;
+    int best = s.flow;
 
     for( auto const& next : s.distance.at( s.loc ) )
         if( next.second <= s.minutes_remaining )
@@ -29,14 +28,10 @@ std::pair< int, state > best_from( state s )
             for( auto& room : mod.distance )
                 room.second.erase( mod.loc );
             mod.loc = next.first;
-            if( auto result = best_from( mod ); result.first > best )
-            {
-                best       = result.first;
-                best_state = mod;
-            }
+            best    = std::max( best_from( mod ), best );
         }
 
-    return { best, best_state };
+    return best;
 }
 
 advent_t advent( std::vector< std::string > const& input )
@@ -83,18 +78,5 @@ advent_t advent( std::vector< std::string > const& input )
         }
     }
 
-    // return best_from( initial );
-    while( true )
-    {
-        auto out = best_from( initial );
-        if( out.second.loc == initial.loc )
-        {
-            return out.first;
-        }
-        else
-        {
-            std::cerr << "Minute " << ( 31 - out.second.minutes_remaining ) << ": Move to " << out.second.loc << " and open, flow at " << out.second.flow << "\n";
-            initial = out.second;
-        }
-    }
+    return best_from( initial );
 }

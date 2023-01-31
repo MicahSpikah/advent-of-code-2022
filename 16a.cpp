@@ -4,109 +4,79 @@
 #include <set>
 #include <unordered_set>
 
-struct valve
-{
-    std::vector< std::string > tunnels;
-    int flow_rate;
-    bool open{};
-};
-
-using valve_map     = std::map< std::string, valve >;
-using rooms_visited = std::unordered_set< std::string >;
+std::map< std::string, int > flow_rate;
 
 struct state
 {
-    valve_map valves;
-    rooms_visited visited;
+    std::map< std::string, std::map< std::string, int > > distance;
     int flow{};
-    std::string location{ "AA" };
     int minutes_remaining{ 30 };
-    std::vector< std::string > path;
-    std::vector< int > untaken_paths;
+    std::string loc{ "AA" };
 };
 
-int get_best_outcome( state the_state )
+int best_from( state s )
 {
-    if( the_state.minutes_remaining <= 1 || std::all_of( the_state.valves.cbegin(), the_state.valves.cend(), []( auto const& t ) { return t.second.open; } ) )
-        return the_state.flow;
+    int best = s.flow;
 
-    int best_result = the_state.flow;
-
-    if( the_state.untaken_paths.size() < 5 )
-    {
-        the_state.untaken_paths.push_back( 0 );
-        if( !the_state.valves[ the_state.location ].open )
-            ++the_state.untaken_paths.back();
-        for( auto const& next_room : the_state.valves[ the_state.location ].tunnels )
-            ++the_state.untaken_paths.back();
-        for( auto const i : the_state.untaken_paths )
-            std::cerr << i << ' ';
-        std::cerr << '\n';
-    }
-
-    if( !the_state.valves[ the_state.location ].open )
-    {
-        state x = the_state;
-        --x.minutes_remaining;
-        x.valves[ x.location ].open = true;
-        x.flow += x.minutes_remaining * x.valves[ x.location ].flow_rate;
-        x.visited = std::unordered_set< std::string >{ x.location };
-
-        best_result = get_best_outcome( std::move( x ) );
-        if( the_state.untaken_paths.size() < 5 )
+    for( auto const& next : s.distance.at( s.loc ) )
+        if( next.second <= s.minutes_remaining )
         {
-            --the_state.untaken_paths.back();
-            for( auto const i : the_state.untaken_paths )
-                std::cerr << i << ' ';
-            std::cerr << '\n';
+            state mod = s;
+            mod.minutes_remaining -= next.second;
+            mod.flow += mod.minutes_remaining * flow_rate.at( next.first );
+            mod.distance.erase( mod.loc );
+            for( auto& room : mod.distance )
+                room.second.erase( mod.loc );
+            mod.loc = next.first;
+            best    = std::max( best_from( mod ), best );
         }
-    }
 
-    for( auto const& next_room : the_state.valves[ the_state.location ].tunnels )
-    {
-        if( !the_state.visited.contains( next_room ) )
-        {
-            state x = the_state;
-            --x.minutes_remaining;
-            x.location = next_room;
-            for( auto const& not_here : the_state.valves[ the_state.location ].tunnels )
-            {
-                x.visited.emplace( not_here );
-            }
-            best_result = std::max( best_result, get_best_outcome( std::move( x ) ) );
-            if( the_state.untaken_paths.size() < 5 )
-            {
-                --the_state.untaken_paths.back();
-                for( auto const i : the_state.untaken_paths )
-                    std::cerr << i << ' ';
-                std::cerr << '\n';
-            }
-        }
-    }
-
-    return best_result;
+    return best;
 }
 
 advent_t advent( std::vector< std::string > const& input )
 {
-    state initial;
+    std::map< std::string, std::unordered_set< std::string > > valves;
 
     for( auto line : input )
     {
-        std::string name = line.substr( 6, 2 );
-        valve v;
-        v.flow_rate = std::atoi( line.substr( 23 ).c_str() );
-        if( v.flow_rate == 0 )
-            v.open = true;
+        std::string name  = line.substr( 6, 2 );
+        flow_rate[ name ] = std::atoi( line.substr( 23 ).c_str() );
 
         for( auto index = line.rfind( " " ); line[ index + 1 ] != 'v'; index = line.rfind( " " ) )
         {
-            v.tunnels.push_back( line.substr( index + 1, 2 ) );
+            std::string dest_name = line.substr( index + 1, 2 );
+            valves[ name ].insert( dest_name );
             line.resize( index );
         }
-
-        initial.valves[ name ] = v;
     }
 
-    return get_best_outcome( initial );
+    state initial;
+    // For AA and each valve with positive flow, what's the distance to each other valve with positive flow?
+    for( auto const& src : valves )
+    {
+        if( src.first == "AA" || flow_rate.at( src.first ) > 0 )
+        {
+            for( auto const& dst : valves )
+            {
+                if( dst.first != src.first && flow_rate.at( dst.first ) > 0 )
+                {
+                    std::unordered_set< std::string > reachable = { src.first };
+                    int in                                      = 1;
+                    while( !reachable.contains( dst.first ) )
+                    {
+                        ++in;
+                        auto prev_reachable = reachable;
+                        for( auto const& adj : prev_reachable )
+                        {
+                            reachable.insert( valves.at( adj ).cbegin(), valves.at( adj ).cend() );
+                        }
+                    }
+                    initial.distance[ src.first ][ dst.first ] = in;
+                }
+            }
+        }
+    }
+
+    return best_from( initial );
 }

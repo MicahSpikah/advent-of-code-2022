@@ -14,9 +14,11 @@ struct state
     std::string loc{ "AA" };
 };
 
-int best_from( state s )
+std::pair< int, state > best_from( state s )
 {
-    int best = s.flow;
+    int best         = s.flow;
+    state best_state = s;
+
     for( auto const& next : s.distance.at( s.loc ) )
         if( next.second <= s.minutes_remaining )
         {
@@ -27,10 +29,14 @@ int best_from( state s )
             for( auto& room : mod.distance )
                 room.second.erase( mod.loc );
             mod.loc = next.first;
-            best    = std::max( best, best_from( mod ) );
+            if( auto result = best_from( mod ); result.first > best )
+            {
+                best       = result.first;
+                best_state = mod;
+            }
         }
 
-    return best;
+    return { best, best_state };
 }
 
 advent_t advent( std::vector< std::string > const& input )
@@ -58,19 +64,15 @@ advent_t advent( std::vector< std::string > const& input )
         {
             for( auto const& dst : valves )
             {
-                std::cerr << "Trying to find shortest distance from " << src.first << " to " << dst.first << '\n';
                 if( dst.first != src.first && flow_rate.at( dst.first ) > 0 )
                 {
                     std::unordered_set< std::string > reachable = { src.first };
                     int in                                      = 1;
                     while( !reachable.contains( dst.first ) )
                     {
-                        std::cerr << "  Reachable (and openable) in " << in << "\n    ";
-                        for( auto const& adj : reachable )
-                            std::cerr << adj << ' ';
-                        std::cerr << "\n    ";
                         ++in;
-                        for( auto const& adj : reachable )
+                        auto prev_reachable = reachable;
+                        for( auto const& adj : prev_reachable )
                         {
                             reachable.insert( valves.at( adj ).cbegin(), valves.at( adj ).cend() );
                         }
@@ -81,8 +83,18 @@ advent_t advent( std::vector< std::string > const& input )
         }
     }
 
-    std::cerr << "*** FLOW RATE ***\n";
-    for( auto const fr : flow_rate )
-        std::cerr << fr.first << ": " << fr.second << '\n';
-    return best_from( initial );
+    // return best_from( initial );
+    while( true )
+    {
+        auto out = best_from( initial );
+        if( out.second.loc == initial.loc )
+        {
+            return out.first;
+        }
+        else
+        {
+            std::cerr << "Minute " << ( 31 - out.second.minutes_remaining ) << ": Move to " << out.second.loc << " and open, flow at " << out.second.flow << "\n";
+            initial = out.second;
+        }
+    }
 }

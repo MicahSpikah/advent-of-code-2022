@@ -16,9 +16,24 @@ struct state
     std::string l2{ "AA" };
 };
 
-int best_from( state s )
+int best_from( state s, int to_beat )
 {
     int best = s.flow;
+
+    // Compute theoretical max
+    int theory = best;
+    for( auto const& next : s.distance.at( s.l2 ) )
+    {
+        int f2{};
+        int f1{};
+        if( auto d2 = next.second; d2 <= s.t2 )
+            f2 = ( s.t2 - d2 ) * flow_rate.at( next.first );
+        if( auto d1 = s.distance.at( s.l1 ).at( next.first ); d1 <= s.t1 )
+            f1 = ( s.t1 - d1 ) * flow_rate.at( next.first );
+        theory += std::max( f1, f2 );
+    }
+    if( theory < to_beat )
+        return best;
 
     for( auto const& next : s.distance.at( s.l2 ) )
     {
@@ -30,14 +45,14 @@ int best_from( state s )
             mod.l2 = next.first;
             for( auto& room : mod.distance )
                 room.second.erase( mod.l2 );
-            best = std::max( best, best_from( mod ) );
+            best = std::max( best, best_from( mod, best ) );
         }
     }
     if( best != s.flow )
     {
         auto mod = s;
         mod.t2   = 0;
-        best     = std::max( best, best_from( mod ) );
+        best     = std::max( best, best_from( mod, best ) );
     }
     else
     {
@@ -51,7 +66,7 @@ int best_from( state s )
                 mod.l1 = next.first;
                 for( auto& room : mod.distance )
                     room.second.erase( mod.l1 );
-                best = std::max( best, best_from( mod ) );
+                best = std::max( best, best_from( mod, best ) );
             }
         }
     }
@@ -111,7 +126,7 @@ advent_t advent( std::vector< std::string > const& input )
         for( auto const& d2 : initial.distance.at( "AA" ) )
             if( d1.first < d2.first )
             {
-                std::cerr << (++loops) << "/210\n";
+                std::cerr << ( ++loops ) << "/210\n";
                 state mod = initial;
                 mod.t1 -= d1.second;
                 mod.flow += mod.t1 * flow_rate.at( d1.first );
@@ -124,7 +139,7 @@ advent_t advent( std::vector< std::string > const& input )
                     room.second.erase( mod.l1 );
                     room.second.erase( mod.l2 );
                 }
-                best = std::max( best, best_from( mod ) );
+                best = std::max( best, best_from( mod, best ) );
             }
 
     return best;

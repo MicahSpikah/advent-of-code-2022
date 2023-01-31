@@ -18,8 +18,7 @@ struct state
 
 int best_from( state s )
 {
-    int best         = s.flow;
-    state best_state = s;
+    int best = s.flow;
 
     for( auto const& next : s.distance.at( s.l2 ) )
     {
@@ -104,29 +103,29 @@ advent_t advent( std::vector< std::string > const& input )
         }
     }
 
-    return best_from( initial );
-    /*
-        while( true )
-    {
-        auto out = best_from( initial );
-        if( out.second.t1 == initial.t1 && out.second.t2 == initial.t2 )
-        {
-            return out.first;
-        }
-        else if(out.second.t1 == initial.t1)
-        {
-            std::cerr << "Minute " << ( 27 - out.second.t2) << ": ELEPHANT Move to " << out.second.l2<< " and open, flow at " << out.second.flow << "\n";
-            initial = out.second;
-        }
-        else
-        {
-            std::cerr << "Minute " << ( 27 - out.second.t1) << ": Move to " << out.second.l1<< " and open, flow at " << out.second.flow << "\n";
-            initial = out.second;
-        }
-        std::cerr << "Places you can get from AA:";
-        for(auto const dst : out.second.distance.at("AA"))
-            std::cerr << ' ' << dst.first;
-        std::cerr << '\n';
-    }
-    */
+    int best{};
+    int loops{};
+
+    //Without loss of generality, pick the first two destinations. l1 always goes to the first room lexigraphically
+    for( auto const& d1 : initial.distance.at( "AA" ) )
+        for( auto const& d2 : initial.distance.at( "AA" ) )
+            if( d1.first < d2.first )
+            {
+                std::cerr << (++loops) << "/210\n";
+                state mod = initial;
+                mod.t1 -= d1.second;
+                mod.flow += mod.t1 * flow_rate.at( d1.first );
+                mod.l1 = d1.first;
+                mod.t2 -= d2.second;
+                mod.flow += mod.t2 * flow_rate.at( d2.first );
+                mod.l2 = d2.first;
+                for( auto& room : mod.distance )
+                {
+                    room.second.erase( mod.l1 );
+                    room.second.erase( mod.l2 );
+                }
+                best = std::max( best, best_from( mod ) );
+            }
+
+    return best;
 }

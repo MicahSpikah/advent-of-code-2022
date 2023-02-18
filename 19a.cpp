@@ -106,34 +106,41 @@ int get_best_state( state const s )
     if( s.time == max_time )
         return geodes;
 
-    if( s.afford_ore_robot() )
     {
-        auto tmp_state = s;
-        tmp_state.construct_ore_robot();
-        geodes = std::max( geodes, get_best_state( tmp_state ) );
-    }
-    if( s.afford_clay_robot() )
-    {
-        auto tmp_state = s;
-        tmp_state.construct_clay_robot();
-        geodes = std::max( geodes, get_best_state( tmp_state ) );
-    }
-    if( s.afford_obsidian_robot() )
-    {
-        auto tmp_state = s;
-        tmp_state.construct_obsidian_robot();
-        geodes = std::max( geodes, get_best_state( tmp_state ) );
-    }
-    if( s.afford_geode_robot() )
-    {
-        auto tmp_state = s;
-        tmp_state.construct_geode_robot();
-        geodes = std::max( geodes, get_best_state( tmp_state ) );
+        auto t = s;
+        while( !t.afford_ore_robot() && t.time < max_time )
+        {
+            t.tick();
+        }
+        t.construct_ore_robot();
+        geodes = std::max( geodes, get_best_state( t ) );
     }
     {
-        auto tmp_state = s;
-        tmp_state.tick();
-        geodes = std::max( geodes, get_best_state( tmp_state ) );
+        auto t = s;
+        while( !t.afford_clay_robot() && t.time < max_time )
+        {
+            t.tick();
+        }
+        t.construct_clay_robot();
+        geodes = std::max( geodes, get_best_state( t ) );
+    }
+    {
+        auto t = s;
+        while( !t.afford_obsidian_robot() && t.time < max_time )
+        {
+            t.tick();
+        }
+        t.construct_obsidian_robot();
+        geodes = std::max( geodes, get_best_state( t ) );
+    }
+    {
+        auto t = s;
+        while( !t.afford_geode_robot() && t.time < max_time )
+        {
+            t.tick();
+        }
+        t.construct_geode_robot();
+        geodes = std::max( geodes, get_best_state( t ) );
     }
 
     return geodes;

@@ -1,6 +1,6 @@
 #include "parse_input.h"
 
-int constexpr max_time{ 24 };
+int constexpr max_time{ 15 };
 
 struct state
 {
@@ -15,7 +15,6 @@ struct state
     int ore_robots{ 1 };
     int clay_robots{};
     int obsidian_robots{};
-    int geode_robots{};
     int ore{};
     int clay{};
     int obsidian{};
@@ -24,9 +23,9 @@ struct state
     int constructing_ore_robots{};
     int constructing_clay_robots{};
     int constructing_obsidian_robots{};
-    int constructing_geode_robots{};
 
     int time{};
+    std::string history{};
 
     bool afford_ore_robot() const
     {
@@ -50,36 +49,32 @@ struct state
 
     void construct_ore_robot()
     {
+        history += "o";
         ++constructing_ore_robots;
         ore -= ore_cost;
-        if( ore < 0 )
-            time = max_time;
     }
 
     void construct_clay_robot()
     {
+        history += "c";
         ++constructing_clay_robots;
         ore -= clay_cost;
-        if( ore < 0 )
-            time = max_time;
     }
 
     void construct_obsidian_robot()
     {
+        history += "O";
         ++constructing_obsidian_robots;
         ore -= obsidian_ore_cost;
         clay -= obsidian_clay_cost;
-        if( ore < 0 || clay < 0 )
-            time = max_time;
     }
 
     void construct_geode_robot()
     {
-        ++constructing_geode_robots;
+        history += "G";
         ore -= geode_ore_cost;
         obsidian -= geode_obsidian_cost;
-        if( ore < 0 || obsidian < 0 )
-            time = max_time;
+        geode += (max_time - 1);
     }
 
     void tick()
@@ -88,15 +83,12 @@ struct state
         ore += ore_robots;
         clay += clay_robots;
         obsidian += obsidian_robots;
-        geode += geode_robots;
         ore_robots += constructing_ore_robots;
         clay_robots += constructing_clay_robots;
         obsidian_robots += constructing_obsidian_robots;
-        geode_robots += constructing_geode_robots;
         constructing_ore_robots      = 0;
         constructing_clay_robots     = 0;
         constructing_obsidian_robots = 0;
-        constructing_geode_robots    = 0;
     }
 };
 
@@ -104,7 +96,10 @@ int get_best_state( state const s )
 {
     int geodes = s.geode;
     if( s.time == max_time )
+    {
+        std::cout << s.history << " = " << geodes << '\n';
         return geodes;
+    }
 
     {
         auto t = s;
@@ -124,6 +119,7 @@ int get_best_state( state const s )
         t.construct_clay_robot();
         geodes = std::max( geodes, get_best_state( t ) );
     }
+    if( s.clay_robots > 0 )
     {
         auto t = s;
         while( !t.afford_obsidian_robot() && t.time < max_time )
@@ -133,6 +129,7 @@ int get_best_state( state const s )
         t.construct_obsidian_robot();
         geodes = std::max( geodes, get_best_state( t ) );
     }
+    if( s.obsidian_robots > 0 )
     {
         auto t = s;
         while( !t.afford_geode_robot() && t.time < max_time )

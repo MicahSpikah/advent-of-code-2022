@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>676</width>
-    <height>577</height>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
       <item row="3" column="0">
        <widget class="QPushButton" name="buy_geode_">
         <property name="text">
-         <string>Buy Geode collector</string>
+         <string>Buy Geode Collector</string>
         </property>
        </widget>
       </item>
@@ -60,9 +60,9 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="buy_obsidian">
+       <widget class="QPushButton" name="buy_obsidian_">
         <property name="text">
-         <string>Buy Obsidian collector</string>
+         <string>Buy Obsidian Collector</string>
         </property>
        </widget>
       </item>
@@ -139,7 +139,7 @@
       <item row="4" column="1">
        <widget class="QLabel" name="day_">
         <property name="text">
-         <string>Morning of Day 1</string>
+         <string>Time: 0</string>
         </property>
        </widget>
       </item>
